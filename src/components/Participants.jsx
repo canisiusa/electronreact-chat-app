@@ -12,19 +12,21 @@ export default class Participants extends React.Component {
   }
    static defaultProps = {
     participants: null,
-    onSelectUser: null
   }
-  // eslint-disable-next-line react/no-typos
   static propTypes = {
     participants: PropTypes.array.isRequired,
     onSelectUser: PropTypes.func.isRequired
   } 
+
+  handleClick(user) {
+    this.props.onSelectUser(user)
+  }
   render() {
     return(
       <div className="pane pane-sm sidebar">
         <ul className="list-group">
           {this.props.participants.map((user) =>(
-            <li className="list-group-item" key={user.userID} disabled={user.self} onClick={this.props.onSelectUser(user)}>
+            <li className="list-group-item" key={user.userID} disabled={user.self} onClick={this.handleClick.bind(this, user)}>
               <div className="media-body">
                 <strong><span className="icon icon-user"></span>&nbsp;{user.username}</strong>
                 <p>

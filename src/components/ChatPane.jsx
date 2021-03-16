@@ -14,7 +14,7 @@ export default class ChatPane extends React.Component {
     }
   }
 
-   initReactiveProperties = (user) => {
+  initReactiveProperties = (user) => {
     user.connected = true;
     user.messages = [];
     user.hasNewMessages = false;
@@ -23,24 +23,19 @@ export default class ChatPane extends React.Component {
 
   componentDidMount() {
     socket.on("connect", () => {
-      this.setState(prevState => {
-        prevState.participants.forEach((user) => {
-          if (user.self) {
-            user.connected = true;
-          }
-        });
-      })
+      if (this.state.participants.length !== 0) {
+        this.setState(prevState => {
+          prevState.participants.forEach((user) => {
+            if (user.self) {
+              user.connected = true;
+            }
+          });
+        }, () => {
+          //callback
+        })
+      }
     });
 
-    socket.on("disconnect", () => {
-      this.setState(prevState => {
-        prevState.forEach((user) => {
-          if (user.self) {
-            user.connected = false;
-          }
-        });
-      })
-    });
 
     socket.on("users", (users) => {
       users.forEach((user) => {
@@ -55,11 +50,50 @@ export default class ChatPane extends React.Component {
         return a.username > b.username ? 1 : 0;
       });
 
-      this.setState({ participants: OrderUsers })
+      this.setState({ participants: OrderUsers }, () => {
+        // callback
+        console.table(OrderUsers)
+      })
     });
+
+
     socket.on("user connected", (user) => {
       this.initReactiveProperties(user);
-      this.setState(prevState => prevState.participants.push(user))
+      this.setState(prevState => prevState.participants.push(user), () => {
+        console.log('user connected')
+      })
+    });
+
+
+    socket.on("disconnect", () => {
+      this.setState(prevState => {
+        prevState.forEach((user) => {
+          if (user.self) {
+            user.connected = false;
+          }
+        });
+      })
+    });
+
+
+
+    socket.on("user disconnected", (id) => {
+      let updates = this.state.participants
+      for (let i = 0; i < updates.length; i++) {
+        const user = updates[i];
+        if (user.userID === id) {
+          user.connected = false;
+          updates[i] = user
+          break;
+        }
+      };
+      this.setState({
+        participants: updates
+      }, () => {
+        console.table('user disconnected', this.state.participants)
+        //callback
+      })
+
     });
 
     socket.on("private message", ({ content, from }) => {
@@ -81,18 +115,33 @@ export default class ChatPane extends React.Component {
     });
   }
 
+
+
+  componentWillUnmount() {
+    socket.off("connect");
+    socket.off("disconnect");
+    socket.off("users");
+    socket.off("user connected");
+    socket.off("user disconnected");
+    socket.off("private message");
+  }
+
   onMessage = (content) => {
     if (this.state.selectedUser) {
       socket.emit("private message", {
         content,
-        to: this.selectedUser.userID,
+        to: this.state.selectedUser.userID,
       });
-      this.selectedUser.messages.push({
+      const updatesSelectedUser = this.state.selectedUser
+      updatesSelectedUser.messages.push({
         content,
-        fromSelf: true,
-      });
+        fromSelf: true
+      }) 
+      this.setState({ selectedUser: updatesSelectedUser })
     }
+
   }
+
 
   onSelectUser = (user) => {
     user.hasNewMessages = false;
@@ -107,7 +156,7 @@ export default class ChatPane extends React.Component {
       <div className="pane-group" >
         <Participants participants={this.state.participants} onSelectUser={this.onSelectUser} />
         {
-          this.state.selectedUser ?
+          this.state.selectedUser !== null ?
             (<Conversation user={this.state.selectedUser} onMessage={this.onMessage} />) : null
         }
       </div>

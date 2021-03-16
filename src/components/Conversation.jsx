@@ -6,10 +6,7 @@ const ENTER_KEY = 13
 export default class Conversation extends React.Component {
   constructor(props) {
     super(props)
-    this.messages = []
-    this.state = {
-      messages: []
-    }
+    this.state = {}
   }
   static defaultProps = {
     onMessage: null
@@ -41,17 +38,21 @@ export default class Conversation extends React.Component {
     return (
       <div className="pane padded-more l-chat">
         <ul className="list-group l-chat-conversation">
-          {messages.map((msg, i) => (
-            <li className="list-group-item" key={i}>
-              <div className="media-body">
-                {/* <time className="media-body__time">{Conversation.normalizeTime(msg.time, new Date())}</time> */}
-                <strong>{msg.fromSelf ? "(yourself)" : user.username}:</strong>
-                {msg.content.split("\n").map((line, inx) => (
-                  <p key={inx}>{line}</p>
-                ))}
-              </div>
-            </li>
-          ))}
+          {
+
+            messages.map((msg, i) => (
+              <li className="list-group-item" key={i}>
+                <div className="media-body">
+                  <time className="media-body__time">{msg.joinedTime}</time>
+                  <strong>{msg.fromSelf ? "(yourself)" : user.username}:</strong>
+                  {msg.content.split("\n").map((line, inx) => (
+                    <p key={inx}>{line}</p>
+                  ))}
+                </div>
+              </li>
+            ))
+
+          }
         </ul>
         <form className="l-chat-form" onSubmit={this.onSubmit}>
           <div className="form-group">
