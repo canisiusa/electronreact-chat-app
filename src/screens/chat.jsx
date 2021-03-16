@@ -34,14 +34,12 @@ export default class Chat extends React.Component {
   render() {
     const name = this.state.name;
     return (
-      <div className="window">
-        <div className="window-content">
-          {
-            name ?
-              (<ChatPane />) :
-              (<Welcome onNameChange={this.onNameChange} />)
-          }
-        </div>
+      <div className="window-content">
+        {
+          name ?
+            (<ChatPane />) :
+            (<Welcome onNameChange={this.onNameChange} />)
+        }
       </div>
     );
   }

@@ -15,7 +15,7 @@ export default class Participants extends React.Component {
     onSelectUser: null
   }
   // eslint-disable-next-line react/no-typos
-  static PropTypes = {
+  static propTypes = {
     participants: PropTypes.array.isRequired,
     onSelectUser: PropTypes.func.isRequired
   } 

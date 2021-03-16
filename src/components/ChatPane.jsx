@@ -10,15 +10,18 @@ export default class ChatPane extends React.Component {
     super()
     this.state = {
       participants: [],
-      selectedUser: null
+      selectedUser: null,
     }
-    const initReactiveProperties = (user) => {
-      user.connected = true;
-      user.messages = [];
-      user.hasNewMessages = false;
-      user.joinedTime = new Date().getTime()
-    };
+  }
 
+   initReactiveProperties = (user) => {
+    user.connected = true;
+    user.messages = [];
+    user.hasNewMessages = false;
+    user.joinedTime = new Date().getTime()
+  };
+
+  componentDidMount() {
     socket.on("connect", () => {
       this.setState(prevState => {
         prevState.participants.forEach((user) => {
@@ -42,7 +45,7 @@ export default class ChatPane extends React.Component {
     socket.on("users", (users) => {
       users.forEach((user) => {
         user.self = user.userID === socket.id;
-        initReactiveProperties(user);
+        this.initReactiveProperties(user);
       });
       // put the current user first, and then sort by username
       const OrderUsers = users.sort((a, b) => {
@@ -54,9 +57,8 @@ export default class ChatPane extends React.Component {
 
       this.setState({ participants: OrderUsers })
     });
-
     socket.on("user connected", (user) => {
-      initReactiveProperties(user);
+      this.initReactiveProperties(user);
       this.setState(prevState => prevState.participants.push(user))
     });
 
@@ -79,7 +81,7 @@ export default class ChatPane extends React.Component {
     });
   }
 
-  onMessage(content) {
+  onMessage = (content) => {
     if (this.state.selectedUser) {
       socket.emit("private message", {
         content,
@@ -92,8 +94,9 @@ export default class ChatPane extends React.Component {
     }
   }
 
-  onSelectUser(user) {
+  onSelectUser = (user) => {
     user.hasNewMessages = false;
+
     this.setState({
       selectedUser: user
     })
@@ -102,10 +105,10 @@ export default class ChatPane extends React.Component {
   render() {
     return (
       <div className="pane-group" >
-        <Participants participants={this.state.participants} onSelectUser={this.onSelectUser}/>
-        { 
-          this.state.selectedUser ? 
-            (<Conversation user={this.state.selectedUser} onMessage={this.onMessage}/>): null
+        <Participants participants={this.state.participants} onSelectUser={this.onSelectUser} />
+        {
+          this.state.selectedUser ?
+            (<Conversation user={this.state.selectedUser} onMessage={this.onMessage} />) : null
         }
       </div>
     )
