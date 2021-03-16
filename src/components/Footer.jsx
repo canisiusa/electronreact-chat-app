@@ -1,11 +1,9 @@
 import React from "react";
-import * as manifest from "../../../package.json"
-console.log(manifest)
 export default function Footer() {
   return(
     <footer className="toolbar toolbar footer">
       <h1 className="title">
-        {manifest.name} v.{manifest.version}
+        name v.version
       </h1>
     </footer>
   );

@@ -9,14 +9,14 @@ function createWindow() {
         width:800,
         height:600,
         show: false,
-        frame: false
+        frame: false,
     });
-    const startURL = isDev ? 'http://localhost:3000' : `file://${path.join(__dirname, '../build/index.html')}`;
+    const startURL = isDev ? 'http://localhost:7065' : `file://${path.join(__dirname, '../build/index.html')}`;
 
     mainWindow.loadURL(startURL);
 
     // Open the DevTools.
-    mainWindow.webContents.openDevTools();
+    // mainWindow.webContents.openDevTools();
 
     
     mainWindow.once('ready-to-show', () => mainWindow.show());
@@ -29,6 +29,7 @@ function createWindow() {
         mainWindow = null;
     });
 }
+
 app.on('ready', createWindow);
 
 // Quit when all windows are closed.
@@ -52,4 +53,4 @@ app.on("activate", () => {
 // code. You can also put them in separate files and require them here.
 
 require("electron-debug")();
-    
+

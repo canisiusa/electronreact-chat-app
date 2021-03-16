@@ -5,7 +5,7 @@ import PropTypes from "prop-types"
 export default class Welcome extends React.Component {
   onSubmit = (e) => {
     e.preventDefault()
-    this.props.onNameChange(this.nameEl.value || "Pierre")
+    this.props.onNameChange(this.nameEl.value)
   }
 
   static defaultProps = {
@@ -25,7 +25,7 @@ export default class Welcome extends React.Component {
             <input
               required
               className="form-control"
-              placeholder="Name"
+              placeholder="Your userName"
               ref={(input) => {this.nameEl = input}}
             />
           </div>

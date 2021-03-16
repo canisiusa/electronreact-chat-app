@@ -10,18 +10,12 @@ export default class Conversation extends React.Component {
     this.state = {
       messages: []
     }
-    props.client.on("text", this.onClientText);
   }
   static defaultProps = {
-    client: null
+    onMessage: null
   }
   static propTypes = {
-    client: PropTypes.object.isRequired
-  }
-  onClientText = (msg) => {
-    msg.time = new Date(msg.dateTime);
-    this.messages.unshift(msg);
-    this.setState({ messages: this.messages })
+    onMessage: PropTypes.func.isRequired
   }
   static normalizeTime(date, now, locale) {
     const isToday = (now.toDateString() === date.toDateString())
@@ -38,20 +32,21 @@ export default class Conversation extends React.Component {
     this.submit()
   }
   submit() {
-    this.props.client.message(this.inputEl.value)
+    this.props.onMessage(this.inputEl.value)
     this.inputEl.value = ""
   }
   render() {
-    const { messages } = this.state;
+    const messages = this.props.user.messages;
+    const user = this.props.user;
     return (
       <div className="pane padded-more l-chat">
         <ul className="list-group l-chat-conversation">
           {messages.map((msg, i) => (
             <li className="list-group-item" key={i}>
               <div className="media-body">
-                <time className="media-body__time">{Conversation.normalizeTime(msg.time, new Date())}</time>
-                <strong>{msg.userName}:</strong>
-                {msg.text.split("\n").map((line, inx) => (
+                {/* <time className="media-body__time">{Conversation.normalizeTime(msg.time, new Date())}</time> */}
+                <strong>{msg.fromSelf ? "(yourself)" : user.username}:</strong>
+                {msg.content.split("\n").map((line, inx) => (
                   <p key={inx}>{line}</p>
                 ))}
               </div>

@@ -2,36 +2,36 @@ import React from "react"
 import TimeAgo from "react-timeago"
 import PropTypes from "prop-types"
 
+import StatusIcon from "./StatusIcon"
 export default class Participants extends React.Component {
   constructor(props) {
-    super(props);
+    super(props)
     this.state = {
-      //participants: props.client.getParticipants()
-      participants: []
+      
     }
-    props.client.on("participants", this.onClientParticipants)
   }
-  static defaultProps = {
-    client: null
+   static defaultProps = {
+    participants: null,
+    onSelectUser: null
   }
+  // eslint-disable-next-line react/no-typos
   static PropTypes = {
-    client: PropTypes.object.isRequired
-  }
-  onClientParticipants = (participants) =>{
-    this.setState({
-      participants:participants
-    })
-  }
+    participants: PropTypes.array.isRequired,
+    onSelectUser: PropTypes.func.isRequired
+  } 
   render() {
-    const { participants } = this.state;
     return(
       <div className="pane pane-sm sidebar">
         <ul className="list-group">
-          {participants.map((user) =>(
-            <li className="list-group-item" key={user.name}>
+          {this.props.participants.map((user) =>(
+            <li className="list-group-item" key={user.userID} disabled={user.self} onClick={this.props.onSelectUser(user)}>
               <div className="media-body">
-                <strong><span className="icon icon-user"></span>&nbsp;{user.name}</strong>
-                <p>Joined <TimeAgo date={user.time}/></p>
+                <strong><span className="icon icon-user"></span>&nbsp;{user.username}</strong>
+                <p>
+                  <StatusIcon connected={user.connected}/>
+                  {user.connected ? "online" : "offline"}
+                </p>
+                <p>Joined <TimeAgo date={user.joinedTime}/></p>
               </div>
             </li>
           ))}
