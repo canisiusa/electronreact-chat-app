@@ -21,7 +21,7 @@
     "wait-on": "^5.0.0"
   },
   "scripts": {
-    "dev": " npm start && wait-on http://localhost:7065 && electron .",
+    "dev": " npm start && wait-on http://192.168.43.139:7065 && electron .",
     "start": "set PORT=7065 && react-scripts start",
     "start-server": "nodemon ./Server.js",
     "build": "react-scripts build",

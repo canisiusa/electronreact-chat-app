@@ -15,35 +15,59 @@ export default class ChatPane extends React.Component {
   }
 
   initReactiveProperties = (user) => {
-    user.connected = true;
     user.messages = [];
     user.hasNewMessages = false;
     user.joinedTime = new Date().getTime()
   };
 
   componentDidMount() {
-    socket.on("connect", () => {
-      if (this.state.participants.length !== 0) {
-        this.setState(prevState => {
-          prevState.participants.forEach((user) => {
-            if (user.self) {
-              user.connected = true;
-            }
-          });
-        }, () => {
+   /*  socket.on("connect", () => {
+      console.log('would connect')
+     // if (this.state.participants.length !== 0) {
+       const updateState = this.state.participants
+      const updates = updateState.forEach((user) => {
+        if (user.self) {
+          user.connected = true;
+          console.log('user.self', user.self)
+        }
+      })
+        this.setState({ participants: updates}, () => {
           //callback
         })
-      }
-    });
+     // }
+    }); */
 
 
     socket.on("users", (users) => {
       users.forEach((user) => {
-        user.self = user.userID === socket.id;
-        this.initReactiveProperties(user);
+        let updates = this.state.participants
+        let userExist = false
+        for (let i = 0; i < updates.length; i++) {
+          const existingUser = updates[i];
+          if (existingUser.userID === user.userID) {
+            existingUser.connected = user.connected;
+            updates[i] = existingUser
+            userExist = true
+            return;
+          }
+        }
+        console.log("this.state.participantsa", this.state.participants)
+        this.setState({ participants: updates}, ()=>{
+          if (!userExist) {
+            user.self = user.userID === socket.userID;
+            this.initReactiveProperties(user);
+            let updateState = this.state.participants
+            updateState.push(user)
+            this.setState({ participants: updateState })
+          }
+        })
+        console.log("this.state.participantsb", this.state.participants)
+
+
+        
       });
       // put the current user first, and then sort by username
-      const OrderUsers = users.sort((a, b) => {
+      const OrderUsers = this.state.participants.sort((a, b) => {
         if (a.self) return -1;
         if (b.self) return 1;
         if (a.username < b.username) return -1;
@@ -52,27 +76,49 @@ export default class ChatPane extends React.Component {
 
       this.setState({ participants: OrderUsers }, () => {
         // callback
-        console.table(OrderUsers)
+        console.info('OrderUsers',OrderUsers)
       })
     });
 
 
     socket.on("user connected", (user) => {
-      this.initReactiveProperties(user);
-      this.setState(prevState => prevState.participants.push(user), () => {
-        console.log('user connected')
+      let updates = this.state.participants
+      let isSet = false
+      for (let i = 0; i < updates.length; i++) {
+        let existingUser = updates[i];
+        if (existingUser.userID === user.userID) {
+          existingUser.connected = true;
+          existingUser.joinedTime = new Date().getTime()
+          updates[i] = existingUser
+          isSet = true
+          return;
+        }
+      }
+      this.setState({ participants: updates }, () => {
+
+        if(isSet) {
+          return
+        } else {
+          this.initReactiveProperties(user);
+          console.log('dedededededed',this.state.participants)
+          this.setState((prevState) => ({participants: [...prevState.participants, user]}), () => {
+            console.info(`new user ${user.username}  connected`,this.state.participants)
+          })
+        }
+
       })
+
     });
 
 
     socket.on("disconnect", () => {
-      this.setState(prevState => {
-        prevState.forEach((user) => {
-          if (user.self) {
-            user.connected = false;
-          }
-        });
-      })
+      const updateUser = this.state.participants
+      updateUser.forEach((user) => {
+        if (user.self) {
+          user.connected = false;
+        }
+      });
+      this.setState({ participants: updateUser})
     });
 
 
@@ -97,21 +143,22 @@ export default class ChatPane extends React.Component {
     });
 
     socket.on("private message", ({ content, from }) => {
-      this.setState((prevState) => {
-        for (let i = 0; i < prevState.participants.length; i++) {
-          const user = prevState.participants[i];
-          if (user.userID === from) {
-            user.messages.push({
-              content,
-              fromSelf: false,
-            });
-            if (user !== prevState.selectedUser) {
-              user.hasNewMessages = true;
-            }
-            break;
+      const updateState = this.state.participants
+      for (let i = 0; i < updateState.length; i++) {
+        const user = updateState[i];
+        if (user.userID === from) {
+          user.messages.push({
+            content,
+            fromSelf: false,
+          });
+          if (user !== this.state.selectedUser) {
+            user.hasNewMessages = true;
           }
+          updateState[i] = user
+          break;
         }
-      })
+      }
+      this.setState({ participants: updateState})
     });
   }
 

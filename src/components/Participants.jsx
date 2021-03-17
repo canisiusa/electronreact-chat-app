@@ -22,21 +22,37 @@ export default class Participants extends React.Component {
     this.props.onSelectUser(user)
   }
   render() {
+    const data = this.props.participants
     return(
       <div className="pane pane-sm sidebar">
         <ul className="list-group">
-          {this.props.participants.map((user) =>(
+          <li className="list-group-header">
+            <input className="form-control" type="text" placeholder="Rechercher un participant"/>
+           </li>
+          {data? data.map((user) =>(
             <li className="list-group-item" key={user.userID} disabled={user.self} onClick={this.handleClick.bind(this, user)}>
               <div className="media-body">
-                <strong><span className="icon icon-user"></span>&nbsp;{user.username}</strong>
+                <strong>
+                  {
+                    user.self ? 
+                      <span className="icon icon-info-circled"></span> :
+                      <span className="icon icon-user"></span>
+                  }
+                  &nbsp;{user.username} {user.self ? '(yourself)' : null}
+                  </strong>
                 <p>
                   <StatusIcon connected={user.connected}/>
                   {user.connected ? "online" : "offline"}
                 </p>
+                <div className="new-messages">
+                  {
+                  user.hasNewMessages? '!' : null
+                  }
+                </div>
                 <p>Joined <TimeAgo date={user.joinedTime}/></p>
               </div>
             </li>
-          ))}
+          )): <div>Aucun participant pour le moment</div> }
         </ul>
       </div>
     )

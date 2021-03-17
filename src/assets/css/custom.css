@@ -29,6 +29,16 @@ body {
   float: right;
 }
 
+.new-messages {
+  color: white;
+  background-color: red;
+  width: 20px;
+  border-radius: 5px;
+  text-align: center;
+  float: right;
+  margin-top: 10px;
+}
+
 .icon_status {
   height: 8px;
   width: 8px;
