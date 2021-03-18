@@ -1,24 +1,34 @@
 const httpServer = require("http").createServer();
+const Redis = require("ioredis");
+const redisClient = new Redis();
 const io = require("socket.io")(httpServer, {
   cors: {
-    origin: "http://192.168.43.139:7065",
+    origin: "http://localhost:7065",
   },
+  adapter: require("socket.io-redis")({
+    pubClient: redisClient,
+    subClient: redisClient.duplicate(),
+  }),
 });
 
+
+
+const { setupWorker } = require("@socket.io/sticky");
 const crypto = require("crypto");
 const randomId = () => crypto.randomBytes(8).toString("hex");
 
-const { InMemorySessionStore } = require("./sessionStore");
-const sessionStore = new InMemorySessionStore();
+const { RedisSessionStore } = require("./sessionStore");
+const sessionStore = new RedisSessionStore(redisClient);
 
-const { InMemoryMessageStore } = require("./messageStore");
-const messageStore = new InMemoryMessageStore();
+const { RedisMessageStore } = require("./messageStore");
+const messageStore = new RedisMessageStore(redisClient);
 
-io.use((socket, next) => {
+
+io.use(async (socket, next) => {
   const sessionID = socket.handshake.auth.sessionID;
   if (sessionID) {
     // find existing session
-    const session = sessionStore.findSession(sessionID);
+    const session = await sessionStore.findSession(sessionID);
     if (session) {
       socket.sessionID = sessionID;
       socket.userID = session.userID;
@@ -40,7 +50,7 @@ io.use((socket, next) => {
 
 
 
-io.on("connection", (socket) => {
+io.on("connection", async (socket) => {
   
   // persist session
   sessionStore.saveSession(socket.sessionID, {
@@ -59,8 +69,12 @@ io.on("connection", (socket) => {
 
   // fetch existing users
   const users = [];
+  const [messages, sessions] = await Promise.all([
+    messageStore.findMessagesForUser(socket.userID),
+    sessionStore.findAllSessions(),
+  ]);
   const messagesPerUser = new Map();
-  messageStore.findMessagesForUser(socket.userID).forEach((message) => {
+  messages.forEach((message) => {
     const { from, to } = message;
     const otherUser = socket.userID === from ? to : from;
     if (messagesPerUser.has(otherUser)) {
@@ -69,7 +83,8 @@ io.on("connection", (socket) => {
       messagesPerUser.set(otherUser, [message]);
     }
   });
-  sessionStore.findAllSessions().forEach((session) => {
+
+  sessions.forEach((session) => {
     users.push({
       userID: session.userID,
       username: session.username,
@@ -77,7 +92,6 @@ io.on("connection", (socket) => {
       messages: messagesPerUser.get(session.userID) || [],
     });
   });
-  console.log('user-->',users);
   
   socket.emit("users", users);
 
@@ -86,6 +100,7 @@ io.on("connection", (socket) => {
     userID: socket.userID,
     username: socket.username,
     connected: true,
+    messages: [],
   });
 
   // forward the private message to the right recipient (and to other tabs of the sender)
@@ -117,13 +132,5 @@ io.on("connection", (socket) => {
 });
 
 
-const PORT = process.env.PORT || 5765;
+setupWorker(io);
 
-
-const URL = `http://192.168.43.139:${PORT}`
-
-httpServer.listen(PORT, () =>
-  console.log(`server listening at ${URL}`)
-);
-
-module.exports = {URL}
