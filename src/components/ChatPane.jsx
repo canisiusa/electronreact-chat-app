@@ -142,13 +142,14 @@ export default class ChatPane extends React.Component {
 
     });
 
-    socket.on("private message", ({ content, from }) => {
+    socket.on("private message", ({ content, sent_at, from }) => {
       const updateState = this.state.participants
       for (let i = 0; i < updateState.length; i++) {
         const user = updateState[i];
         if (user.userID === from) {
           user.messages.push({
             content,
+            sent_at,
             fromSelf: false,
           });
           if (user !== this.state.selectedUser) {
@@ -177,11 +178,13 @@ export default class ChatPane extends React.Component {
     if (this.state.selectedUser) {
       socket.emit("private message", {
         content,
+        sent_at: new Date().toUTCString(),
         to: this.state.selectedUser.userID,
       });
       const updatesSelectedUser = this.state.selectedUser
       updatesSelectedUser.messages.push({
         content,
+        sent_at: new Date().toUTCString(),
         fromSelf: true
       }) 
       this.setState({ selectedUser: updatesSelectedUser })

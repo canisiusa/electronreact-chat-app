@@ -1,7 +1,7 @@
 const httpServer = require("http").createServer();
 const io = require("socket.io")(httpServer, {
   cors: {
-    origin: "http://192.168.43.139:7065",
+    origin: "http://localhost:7065",
   },
 });
 
@@ -71,13 +71,14 @@ io.on("connection", (socket) => {
   socket.broadcast.emit("user connected", {
     userID: socket.userID,
     username: socket.username,
-    connected: true,
+    connected: true
   });
 
   // forward the private message to the right recipient (and to other tabs of the sender)
-  socket.on("private message", ({ content, to }) => {
+  socket.on("private message", ({ content, sent_at, to }) => {
     socket.to(to).to(socket.userID).emit("private message", {
       content,
+      sent_at,
       from: socket.userID,
       to,
     });

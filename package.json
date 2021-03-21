@@ -1,5 +1,5 @@
 {
-  "name": "electron-react-boilerplate",
+  "name": "chat_app",
   "homepage": "./",
   "main": "./electron/main.js",
   "version": "0.1.0",
@@ -23,7 +23,7 @@
   "scripts": {
     "dev": " npm start && wait-on http://192.168.43.139:7065 && electron .",
     "start": "set PORT=7065 && react-scripts start",
-    "start-server": "nodemon ./Server.js",
+    "server": "nodemon ./server/Server.js",
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject",

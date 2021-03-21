@@ -11,7 +11,7 @@ function createWindow() {
         show: false,
         frame: false,
     });
-    const startURL = isDev ? 'http://192.168.43.139:7065' : `file://${path.join(__dirname, '../build/index.html')}`;
+    const startURL = isDev ? 'http://localhost:7065' : `file://${path.join(__dirname, '../build/index.html')}`;
 
     mainWindow.loadURL(startURL);
 
