@@ -51,7 +51,6 @@ io.use(async (socket, next) => {
 
 
 io.on("connection", async (socket) => {
-  
   // persist session
   sessionStore.saveSession(socket.sessionID, {
     userID: socket.userID,
@@ -63,16 +62,17 @@ io.on("connection", async (socket) => {
   socket.emit("session", {
     sessionID: socket.sessionID,
     userID: socket.userID,
+    username: socket.username,
   });
   // join the "userID" room
   socket.join(socket.userID);
 
   // fetch existing users
   const users = [];
-  const [messages, sessions] = await Promise.all([
-    messageStore.findMessagesForUser(socket.userID),
-    sessionStore.findAllSessions(),
-  ]);
+  const messages  = await messageStore.findMessagesForUser(socket.userID),
+        sessions= await sessionStore.findAllSessions()
+
+  console.log('sessions',sessions)
   const messagesPerUser = new Map();
   messages.forEach((message) => {
     const { from, to } = message;

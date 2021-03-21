@@ -10,26 +10,28 @@ export default class Chat extends React.Component {
   constructor() {
     super()
     this.state = {
-      name: ""
+      name: "",
+      usernameAlreadySelected: false
     }
   }
   componentDidMount() {
 
-    const sessionID = localStorage.getItem("sessionID");
-
+    const sessionID = sessionStorage.getItem("sessionID");
     if (sessionID) {
+      this.setState({usernameAlreadySelected : true})
       socket.auth = { sessionID };
       socket.connect();
+    }else{
+      socket.on("session", ({ sessionID, userID }) => {
+        // attach the session ID to the next reconnection attempts
+        socket.auth = { sessionID };
+        // store it in the localStorage
+        sessionStorage.setItem("sessionID", sessionID);
+        // save the ID of the user
+        socket.userID = userID;
+      });
     }
 
-    socket.on("session", ({ sessionID, userID }) => {
-      // attach the session ID to the next reconnection attempts
-      socket.auth = { sessionID };
-      // store it in the localStorage
-      localStorage.setItem("sessionID", sessionID);
-      // save the ID of the user
-      socket.userID = userID;
-    });
 
     socket.on("connect_error", (err) => {
       if (err.message === "invalid username") {
@@ -43,17 +45,17 @@ export default class Chat extends React.Component {
   }
 
   onNameChange = (username) => {
-    this.setState({ name: username })
+    this.setState({ usernameAlreadySelected: true })
     socket.auth = { username };
     socket.connect();
   }
 
   render() {
-    const name = this.state.name;
+    const usernameAlreadySelected = this.state.usernameAlreadySelected
     return (
       <div className="window-content">
         {
-          name ?
+          usernameAlreadySelected?
             (<ChatPane />) :
             (<Welcome onNameChange={this.onNameChange} />)
         }

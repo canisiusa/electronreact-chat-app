@@ -22,13 +22,11 @@ export default class ChatPane extends React.Component {
 
   componentDidMount() {
    /*  socket.on("connect", () => {
-      console.log('would connect')
      // if (this.state.participants.length !== 0) {
        const updateState = this.state.participants
       const updates = updateState.forEach((user) => {
         if (user.self) {
           user.connected = true;
-          console.log('user.self', user.self)
         }
       })
         this.setState({ participants: updates}, () => {
@@ -39,6 +37,7 @@ export default class ChatPane extends React.Component {
 
 
     socket.on("users", (users) => {
+      console.log("liste des users",users)
       users.forEach((user) => {
         let updates = this.state.participants
         let userExist = false
@@ -51,7 +50,6 @@ export default class ChatPane extends React.Component {
             return;
           }
         }
-        console.log("this.state.participantsa", this.state.participants)
         this.setState({ participants: updates}, ()=>{
           if (!userExist) {
             user.self = user.userID === socket.userID;
@@ -60,11 +58,7 @@ export default class ChatPane extends React.Component {
             updateState.push(user)
             this.setState({ participants: updateState })
           }
-        })
-        console.log("this.state.participantsb", this.state.participants)
-
-
-        
+        })        
       });
       // put the current user first, and then sort by username
       const OrderUsers = this.state.participants.sort((a, b) => {
@@ -76,7 +70,6 @@ export default class ChatPane extends React.Component {
 
       this.setState({ participants: OrderUsers }, () => {
         // callback
-        console.info('OrderUsers',OrderUsers)
       })
     });
 
@@ -100,7 +93,6 @@ export default class ChatPane extends React.Component {
           return
         } else {
           this.initReactiveProperties(user);
-          console.log('dedededededed',this.state.participants)
           this.setState((prevState) => ({participants: [...prevState.participants, user]}), () => {
             console.info(`new user ${user.username}  connected`,this.state.participants)
           })
@@ -136,13 +128,13 @@ export default class ChatPane extends React.Component {
       this.setState({
         participants: updates
       }, () => {
-        console.table('user disconnected', this.state.participants)
         //callback
       })
 
     });
 
     socket.on("private message", ({ content, from }) => {
+      const audio = new Audio('../assets/media/notification.mp3')
       const updateState = this.state.participants
       for (let i = 0; i < updateState.length; i++) {
         const user = updateState[i];
@@ -153,6 +145,7 @@ export default class ChatPane extends React.Component {
           });
           if (user !== this.state.selectedUser) {
             user.hasNewMessages = true;
+            audio.play()
           }
           updateState[i] = user
           break;
