@@ -1,6 +1,6 @@
 import React from 'react';
 import { Route, BrowserRouter, Switch } from 'react-router-dom';
-import Chat from './screens/Chat';
+import Chat from './screens/chat';
 import Profile from './screens/Profile';
 import Header from './components/Header';
 import Footer from './components/Footer';
