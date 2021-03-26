@@ -1,5 +1,7 @@
 import React from "react"
 import PropTypes from "prop-types"
+import avatar1 from "../assets/img/avatar2.png"
+import avatar2 from "../assets/img/avatar3.png"
 const ENTER_KEY = 13
 
 
@@ -41,14 +43,38 @@ export default class Conversation extends React.Component {
           {
 
             messages.map((msg, i) => (
-              <li className="list-group-item" key={i}>
-                <div className="media-body">
-                  <time className="media-body__time">{msg.joinedTime}</time>
-                  <strong>{msg.fromSelf ? "(yourself)" : user.username}:</strong>
-                  {msg.content.split("\n").map((line, inx) => (
-                    <p key={inx}>{line}</p>
-                  ))}
-                </div>
+              
+              <li className=" list-group-item" key={i}>
+                {msg.fromSelf ? 
+                  (<div className="media-body direct-chat-msg right">
+                    <div class="direct-chat-infos clearfix">
+                      <span class="direct-chat-name float-left">{user.username.toUpperCase()}</span>
+                      <span class="direct-chat-timestamp float-right">{msg.sent_at}</span>
+                    </div>
+                    <img className="direct-chat-img" src={avatar2} alt="Message User avatar" />
+                    <div class="direct-chat-text">
+                      {
+                        msg.content.split("\n").map((line, inx) => (
+                          <p key={inx}>{line}</p>))
+                      }
+                    </div>
+
+                  </div>) :
+                  (<div className="media-body direct-chat-msg">
+                    <div class="direct-chat-infos clearfix">
+                      <span class="direct-chat-name float-left">{user.username.toUpperCase()}</span>
+                      <span class="direct-chat-timestamp float-right">{msg.sent_at}</span>
+                    </div>
+                    <img className="direct-chat-img" src={avatar1} alt="Message User avatar" />
+                    <div class="direct-chat-text">
+                      {
+                        msg.content.split("\n").map((line, inx) => (
+                          <p key={inx}>{line}</p>))
+                      }
+                    </div>
+                  </div>)
+                }
+                
               </li>
             ))
 

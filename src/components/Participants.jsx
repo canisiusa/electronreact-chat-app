@@ -1,3 +1,4 @@
+/* eslint-disable no-restricted-globals */
 import React from "react"
 import TimeAgo from "react-timeago"
 import PropTypes from "prop-types"
@@ -19,7 +20,11 @@ export default class Participants extends React.Component {
   } 
 
   handleClick(user) {
-    this.props.onSelectUser(user)
+    event.stopImmediatePropagation()
+    if (event.target.parentNode.parentNode.classList.contains('list-group-item')){
+      event.target.parentNode.parentNode.classList.add('active')
+      this.props.onSelectUser(user)
+    }
   }
   render() {
     const data = this.props.participants
@@ -31,7 +36,7 @@ export default class Participants extends React.Component {
            </li>
           {data? data.map((user) =>(
             <li className="list-group-item" key={user.userID} disabled={user.self} onClick={this.handleClick.bind(this, user)}>
-              <div className="media-body">
+              <div className="media-body" style={{"cursor":"pointer"}}>
                 <strong>
                   {
                     user.self ? 
@@ -49,7 +54,7 @@ export default class Participants extends React.Component {
                   user.hasNewMessages? '!' : null
                   }
                 </div>
-                <p>Joined <TimeAgo date={user.joinedTime}/></p>
+                <time>Joined <TimeAgo date={user.joinedTime}/></time>
               </div>
             </li>
           )): <div>Aucun participant pour le moment</div> }
