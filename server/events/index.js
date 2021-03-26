@@ -1,14 +1,8 @@
 const httpServer = require("http").createServer();
-const Redis = require("ioredis");
-const redisClient = new Redis();
 const io = require("socket.io")(httpServer, {
   cors: {
     origin: "http://localhost:7065",
   },
-  adapter: require("socket.io-redis")({
-    pubClient: redisClient,
-    subClient: redisClient.duplicate(),
-  }),
 });
 
 
@@ -17,15 +11,14 @@ const { setupWorker } = require("@socket.io/sticky");
 const crypto = require("crypto");
 const randomId = () => crypto.randomBytes(8).toString("hex");
 
-const { RedisSessionStore } = require("./sessionStore");
-const sessionStore = new RedisSessionStore(redisClient);
-
-const { RedisMessageStore } = require("./messageStore");
-const messageStore = new RedisMessageStore(redisClient);
 
 
 io.use(async (socket, next) => {
   const sessionID = socket.handshake.auth.sessionID;
+  const username = socket.handshake.auth.username;
+  if (!username) {
+    return next(new Error("invalid username"));
+  }
   if (sessionID) {
     // find existing session
     const session = await sessionStore.findSession(sessionID);
@@ -34,17 +27,15 @@ io.use(async (socket, next) => {
       socket.userID = session.userID;
       socket.username = session.username;
       return next();
+    } else {
+
+      // create new session
+      socket.sessionID = randomId();
+      socket.userID = randomId();
+      socket.username = username;
+      next();
     }
   }
-  const username = socket.handshake.auth.username;
-  if (!username) {
-    return next(new Error("invalid username"));
-  }
-  // create new session
-  socket.sessionID = randomId();
-  socket.userID = randomId();
-  socket.username = username;
-  next();
 });
 
 
