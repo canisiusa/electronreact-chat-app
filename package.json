@@ -5,6 +5,7 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
+    "concurrently": "^6.0.0",
     "electron-is-dev": "^1.2.0",
     "photonkit": "^0.1.2",
     "prop-types": "^15.7.2",
@@ -24,7 +25,9 @@
   "scripts": {
     "dev": " concurrently \"npm run start\" \"npm run server\"",
     "start": "set PORT=7065 && react-scripts start",
-    "server": "nodemon ./server/Server.js",
+    "server": "nodemon ./server/server.js",
+    "db:migrate": "node ./server/config/db.js",
+    "electron": "electron .",
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject",

@@ -1,10 +1,14 @@
+//#region model fields
+// id
+// user_id
+// connected
+// created_at
+// updated_at
+//#endregion
 
-/*abstract class*/class SessionStore {
-  findSession(id) { }
-  saveSession(id, session) { }
-  findAllSessions() { }
-}
-class InMemorySessionStore extends SessionStore {
+
+
+class  Session {
   constructor() {
     super();
     this.sessions = new Map();
@@ -24,5 +28,5 @@ class InMemorySessionStore extends SessionStore {
 }
 
 module.exports = {
-  InMemorySessionStore
+  Session
 };

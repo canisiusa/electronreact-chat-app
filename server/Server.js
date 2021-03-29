@@ -5,11 +5,9 @@ const io = require("socket.io")(httpServer, {
   },
 });
 
-const crypto = require("crypto");
-const randomId = () => crypto.randomBytes(8).toString("hex");
-
-const { InMemorySessionStore } = require("./sessionStore");
-const sessionStore = new InMemorySessionStore();
+let Session = require('./models/session')
+let User = require('./models/user')
+let Message = require('./models/message')
 
 io.use((socket, next) => {
   const sessionID = socket.handshake.auth.sessionID;
