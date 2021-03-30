@@ -35,7 +35,7 @@ export default class Participants extends React.Component {
             <input className="form-control" type="text" placeholder="Rechercher un participant"/>
            </li>
           {data? data.map((user) =>(
-            <li className="list-group-item" key={user.userID} disabled={user.self} onClick={this.handleClick.bind(this, user)}>
+            <li className="list-group-item" key={user.id} disabled={user.self} onClick={this.handleClick.bind(this, user)}>
               <div className="media-body" style={{"cursor":"pointer"}}>
                 <strong>
                   {

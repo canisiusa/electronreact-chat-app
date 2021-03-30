@@ -17,10 +17,17 @@ class Message {
 
 
   // methods
-  static create(content, cb) {
-    connection.query('INSERT INTO messages SET content = ?, created_at = ?', [content, new Date()], (err, result) => {
+  static create({ content, from, to }) {
+    connection.query('INSERT INTO messages SET content = ?, created_at = ?, from_id = ?, to_id = ?', [content, new Date(), from, to ], (err, result) => {
       if (err) throw err
-      cb(result)
+     
+    })
+  }
+
+  static get(from,to, callback){
+    connection.query('SELECT * FROM messages WHERE from_id = ? AND to_id = ? OR from_id = ? AND to_id = ? ORDER BY created_at DESC', [from,to, to,from],function (err, rows){
+      if (err) throw err
+      callback(rows)      
     })
   }
 

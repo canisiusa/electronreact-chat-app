@@ -1,15 +1,17 @@
-const { app, BrowserWindow, ipcMain } = require('electron');
+const { app, BrowserWindow, ipcMain, Tray, Menu, shell } = require('electron');
 const isDev = require('electron-is-dev');   
 const path = require('path');
 
 let mainWindow;
-
+let appIcon = process.platform === "win32" ? path.join(__dirname, "icon.ico") : path.join(__dirname, "icon-64x64.png")
+let tray = null
 function createWindow() {
     mainWindow = new BrowserWindow({
         width:800,
         height:600,
         show: false,
-        frame: false,
+        frame: true,
+        icon: appIcon
     });
     const startURL = isDev ? 'http://localhost:7065' : `file://${path.join(__dirname, '../build/index.html')}`;
 
@@ -29,6 +31,91 @@ function createWindow() {
         mainWindow = null;
     });
 }
+app.whenReady().then(() => {
+    tray = new Tray(appIcon)
+    const contextMenu = Menu.buildFromTemplate([
+        {
+            label: "Fenetre",
+            submenu: [
+                {
+                    label: "Zoom +",
+                    click: () => {
+                        const contents = mainWindow.webContents;
+                        const level = contents.getZoomLevel();
+                        contents.setZoomLevel(level + 0.5)
+                    },
+                    accelerator: "CmdOrCtrl+numadd"
+                },
+                {
+                    label: "Zoom -",
+                    click: () => {
+                        const contents = mainWindow.webContents;
+                        const level = contents.getZoomLevel();
+                        contents.setZoomLevel(level - 0.5)
+                    },
+                    accelerator: "CmdOrCtrl+numsub"
+                },
+                {
+                    type: "separator"
+                },
+                {
+                    label: "Agrandir",
+                    click: () => {
+                        mainWindow.maximize()
+                    }
+                },
+                {
+                    label: "Restorer",
+                    click: () => {
+                        mainWindow.restore()
+                    }
+                },
+                {
+                    label: "Reduire",
+                    click: () => {
+                        mainWindow.minimize()
+                    }
+                }
+            ]
+        },
+        {
+            label: "Quitter",
+            click: () => {
+                app.quit()
+            }
+        },
+        isDev? {
+            label: "DevTools",
+            click: () => {
+                mainWindow.webContents.openDevTools(/* { mode: 'detach' } */)
+            }
+        } : null,
+        {
+            label: "Reload",
+            role: 'reload'
+        },
+        {
+            role: 'help',
+            submenu: [
+                {
+                    label: 'Learn More',
+                    click: async () => {
+                        await shell.openExternal('https://electronjs.org')
+                    }
+                },
+                {
+                    label: 'Github',
+                    click: async () => {
+                        await shell.openExternal('https://github.com/canisiusa')
+                    }
+                }
+            ]
+        }
+       
+    ])
+    tray.setToolTip('electronreact-chapp-app')
+    tray.setContextMenu(contextMenu)
+})
 
 app.on('ready', createWindow);
 
@@ -57,3 +144,4 @@ ipcMain.handle('close-app', () => {
 
 require("electron-debug")();
 
+Menu.setApplicationMenu(null)

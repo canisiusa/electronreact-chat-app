@@ -7,26 +7,34 @@
 //#endregion
 
 
+let connection = require('../config/db')
 
 class  Session {
   constructor() {
-    super();
     this.sessions = new Map();
   }
 
-  findSession(id) {
-    return this.sessions.get(id);
+  static findUser(id,callback) {
+    connection.query('SELECT * FROM sessions WHERE user_id = ? GROUP BY `created_at` DESC', [id], function(err, result){
+      if (err) throw err
+      callback(result)
+    })
   }
 
-  saveSession(id, session) {
-    this.sessions.set(id, session);
+  static saveSession(session, callback) {
+    connection.query('INSERT INTO sessions SET id = ?, user_id = ?, connected = ?, created_at = ?', [session.id, session.user_id, session.connected ,  new Date()], (err, result) => {
+      if (err) throw err
+      callback(result)
+    })
+    
   }
 
-  findAllSessions() {
-    return [...this.sessions.values()];
+  static disconnectUser(id) {
+    connection.query('UPDATE `sessions` SET `connected` = ? WHERE `id` = ?', [0, id], (err, result) => {
+      if (err) throw err
+      
+    })
   }
 }
 
-module.exports = {
-  Session
-};
+module.exports = Session

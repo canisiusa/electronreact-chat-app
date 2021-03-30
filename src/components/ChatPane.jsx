@@ -4,6 +4,7 @@ import Conversation from "./Conversation.jsx"
 
 import socket from "../service/Client"
 
+import song from '../assets/media/notification.mp3'
 
 export default class ChatPane extends React.Component {
   constructor() {
@@ -22,13 +23,11 @@ export default class ChatPane extends React.Component {
 
   componentDidMount() {
    /*  socket.on("connect", () => {
-      console.log('would connect')
      // if (this.state.participants.length !== 0) {
        const updateState = this.state.participants
       const updates = updateState.forEach((user) => {
         if (user.self) {
           user.connected = true;
-          console.log('user.self', user.self)
         }
       })
         this.setState({ participants: updates}, () => {
@@ -42,29 +41,26 @@ export default class ChatPane extends React.Component {
       users.forEach((user) => {
         let updates = this.state.participants
         let userExist = false
+        user.connected === 1 ? user.connected = true : user.connected = false
         for (let i = 0; i < updates.length; i++) {
-          const existingUser = updates[i];
-          if (existingUser.userID === user.userID) {
+          const existingUser = updates[i]
+          if (existingUser.id === user.id) {
             existingUser.connected = user.connected;
+            existingUser.self = user.id === socket.userID;
             updates[i] = existingUser
             userExist = true
             return;
           }
         }
-        console.log("this.state.participantsa", this.state.participants)
         this.setState({ participants: updates}, ()=>{
           if (!userExist) {
-            user.self = user.userID === socket.userID;
+            user.self = user.id === socket.userID;
             this.initReactiveProperties(user);
             let updateState = this.state.participants
             updateState.push(user)
             this.setState({ participants: updateState })
           }
-        })
-        console.log("this.state.participantsb", this.state.participants)
-
-
-        
+        })        
       });
       // put the current user first, and then sort by username
       const OrderUsers = this.state.participants.sort((a, b) => {
@@ -73,10 +69,9 @@ export default class ChatPane extends React.Component {
         if (a.username < b.username) return -1;
         return a.username > b.username ? 1 : 0;
       });
-
+      
       this.setState({ participants: OrderUsers }, () => {
         // callback
-        console.info('OrderUsers',OrderUsers)
       })
     });
 
@@ -86,7 +81,7 @@ export default class ChatPane extends React.Component {
       let isSet = false
       for (let i = 0; i < updates.length; i++) {
         let existingUser = updates[i];
-        if (existingUser.userID === user.userID) {
+        if (existingUser.id === user.id) {
           existingUser.connected = true;
           existingUser.joinedTime = new Date().getTime()
           updates[i] = existingUser
@@ -96,11 +91,8 @@ export default class ChatPane extends React.Component {
       }
       this.setState({ participants: updates }, () => {
 
-        if(isSet) {
-          return
-        } else {
+        if(!isSet) {
           this.initReactiveProperties(user);
-          console.log('dedededededed',this.state.participants)
           this.setState((prevState) => ({participants: [...prevState.participants, user]}), () => {
             console.info(`new user ${user.username}  connected`,this.state.participants)
           })
@@ -121,8 +113,6 @@ export default class ChatPane extends React.Component {
       this.setState({ participants: updateUser})
     });
 
-
-
     socket.on("user disconnected", (id) => {
       let updates = this.state.participants
       for (let i = 0; i < updates.length; i++) {
@@ -136,24 +126,25 @@ export default class ChatPane extends React.Component {
       this.setState({
         participants: updates
       }, () => {
-        console.table('user disconnected', this.state.participants)
         //callback
       })
 
     });
 
-    socket.on("private message", ({ content, sent_at, from }) => {
+    socket.on("private message", ({ content, created_at, from }) => {
+      var audio = new Audio(song);
       const updateState = this.state.participants
       for (let i = 0; i < updateState.length; i++) {
         const user = updateState[i];
-        if (user.userID === from) {
+        if (user.id === from) {
           user.messages.push({
             content,
-            sent_at,
+            created_at,
             fromSelf: false,
           });
           if (user !== this.state.selectedUser) {
             user.hasNewMessages = true;
+            audio.play()
           }
           updateState[i] = user
           break;
@@ -161,6 +152,12 @@ export default class ChatPane extends React.Component {
       }
       this.setState({ participants: updateState})
     });
+
+    socket.on("messages list", (messages)=>{
+      const setmessages = this.state.selectedUser
+      setmessages.messages = messages
+      this.setState({ selectedUser: setmessages })
+    })
   }
 
 
@@ -178,13 +175,13 @@ export default class ChatPane extends React.Component {
     if (this.state.selectedUser) {
       socket.emit("private message", {
         content,
-        sent_at: new Date().toUTCString(),
-        to: this.state.selectedUser.userID,
+        created_at: new Date().toUTCString(),
+        to: this.state.selectedUser.id,
       });
       const updatesSelectedUser = this.state.selectedUser
       updatesSelectedUser.messages.push({
         content,
-        sent_at: new Date().toUTCString(),
+        created_at: new Date().toUTCString(),
         fromSelf: true
       }) 
       this.setState({ selectedUser: updatesSelectedUser })
@@ -194,11 +191,12 @@ export default class ChatPane extends React.Component {
 
 
   onSelectUser = (user) => {
+    socket.emit("get messages", {
+      from: socket.userID,
+      to: user.id
+    });
     user.hasNewMessages = false;
-
-    this.setState({
-      selectedUser: user
-    })
+    this.setState({selectedUser: user}, function(){})
   }
 
   render() {
