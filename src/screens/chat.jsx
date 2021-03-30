@@ -16,21 +16,13 @@ export default class Chat extends React.Component {
   }
   componentDidMount() {
 
-    const sessionID = sessionStorage.getItem("sessionID");
-    if (sessionID) {
-      this.setState({usernameAlreadySelected : true})
-      socket.auth = { sessionID };
-      socket.connect();
-    }else{
+
       socket.on("session", ({ sessionID, userID }) => {
         // attach the session ID to the next reconnection attempts
         socket.auth = { sessionID };
-        // store it in the localStorage
-        sessionStorage.setItem("sessionID", sessionID);
         // save the ID of the user
         socket.userID = userID;
       });
-    }
 
 
     socket.on("connect_error", (err) => {
@@ -44,7 +36,7 @@ export default class Chat extends React.Component {
     socket.off("connect_error");
   }
 
-  onNameChange = (username) => {
+  onNameChange = (username, password) => {
     this.setState({ usernameAlreadySelected: true })
     socket.auth = { username };
     socket.connect();
