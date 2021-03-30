@@ -1,10 +1,12 @@
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
-## Available Scripts
-first run `npm install`
-In the project directory, you can run:
+- first run `npm install`
+- go to server directory and run `npm install too`
+- open your phpmyadmin and create database named chatApp
 
-### `npm run dev`
+In the project directory, run:
+
+- run `npm run db:migrate`
+- run `npm run dev`
 
 Runs the app in the development mode with  `npm run electron` command.<br />
 for each app instance you want, run `npm run electron`

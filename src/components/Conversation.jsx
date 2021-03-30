@@ -48,8 +48,8 @@ export default class Conversation extends React.Component {
                 {msg.fromSelf ? 
                   (<div className="media-body direct-chat-msg right">
                     <div class="direct-chat-infos clearfix">
-                      <span class="direct-chat-name float-left">{user.username.toUpperCase()}</span>
-                      <span class="direct-chat-timestamp float-right">{msg.sent_at}</span>
+                      <span class="direct-chat-name float-left">{user.username}</span>
+                      <span class="direct-chat-timestamp float-right">{msg.created_at}</span>
                     </div>
                     <img className="direct-chat-img" src={avatar2} alt="Message User avatar" />
                     <div class="direct-chat-text">
@@ -63,7 +63,7 @@ export default class Conversation extends React.Component {
                   (<div className="media-body direct-chat-msg">
                     <div class="direct-chat-infos clearfix">
                       <span class="direct-chat-name float-left">{user.username.toUpperCase()}</span>
-                      <span class="direct-chat-timestamp float-right">{msg.sent_at}</span>
+                      <span class="direct-chat-timestamp float-right">{msg.created_at}</span>
                     </div>
                     <img className="direct-chat-img" src={avatar1} alt="Message User avatar" />
                     <div class="direct-chat-text">
